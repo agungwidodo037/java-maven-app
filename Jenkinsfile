@@ -1,22 +1,35 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'maven-3.9'
+    }
+    
     stages {
-        stage('Build') {
+        stage('Build jar') {
             steps {
-                echo "Building the application..."
+                echo 'mvn package'
             }
         }
 
-        stage('Test') {
+        stage('Build Image') {
             steps {
-                echo "Testing the application..."
+                script {
+                    echo "Building the docker image..."
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-repo', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                        sh 'docker build -t agungwidodo17/demo-app:jma-2.0 .'
+                        sh "echo Agung1706 | docker login -u agungwidodo17 --password-stdin"
+                        sh 'docker push agungwidodo17/demo-app:jma-2.0'
+                    }
+                }
             }
         }
 
         stage('Deploy') {
             steps {
-                echo "Deploying the application..."
+                script {
+                    echo "Deploying the application..."
+                }
             }
         }
     }
